@@ -26,6 +26,7 @@ class SocketProxy(object):
         self.proxy_conn.bind((self.proxy_host, self.proxy_port))
         self.proxy_conn.listen(1)
         self.proxy_conn.accept()
+        self.proxy, addr = self.proxy_conn.accept()
         logging.info('{} connected'.format(addr))
 
     def add_pipe(self, pipe):
