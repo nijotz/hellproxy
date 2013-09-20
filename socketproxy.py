@@ -5,15 +5,17 @@ import socket
 
 class SocketProxy(object):
     
-    def __init__(self, server_host, server_port, listener_host='localhost', listener_port='8080'):
+    def __init__(self, server_host, server_port, proxy_host='localhost', proxy_port='8080'):
 
         self.server_host = server_host
         self.server_port = int(server_port)
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.listener_host = listener_host
-        self.listener_port = int(listener_port)
-        self.listener_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.proxy_host = proxy_host
+        self.proxy_port = int(proxy_port)
+        self.proxy_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.pipes = []
 
     def connect(self):
         "Connects to the server"
@@ -21,9 +23,9 @@ class SocketProxy(object):
 
     def listen(self):
         "Waits for a connection"
-        self.listener_conn.bind((self.listener_host, self.listener_port))
-        self.listener_conn.listen(1)
-        self.listener, addr = self.listener_conn.accept()
+        self.proxy_conn.bind((self.proxy_host, self.proxy_port))
+        self.proxy_conn.listen(1)
+        self.proxy_conn.accept()
         logging.info('{} connected'.format(addr))
 
     def proxy_data(self, sender, receiver):
@@ -37,14 +39,14 @@ class SocketProxy(object):
 
         while True:
             # Wait for one of the sockets to be readable
-            sockets = (self.server, self.listener)
-            readables, _, errors = select.select(sockets, (), sockets, 60)
+            sockets = (self.server, self.proxy)
+            readables, _, errors = select.select(sockets, (), sockets, 30)
 
             for readable in readables:
                 if readable is self.server:
-                    self.proxy_data(self.server, self.listener)
+                    self.proxy_data(self.server, self.proxy)
                 else:
-                    self.proxy_data(self.listener, self.server)
+                    self.proxy_data(self.proxy, self.server)
 
 
 def main():
