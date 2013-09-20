@@ -28,8 +28,28 @@ class SocketProxy(object):
         self.proxy_conn.accept()
         logging.info('{} connected'.format(addr))
 
+    def add_pipe(self, pipe):
+        self.pipe.attach_pipe(self)
+        self.pipes.append(pipe)
+
+    def feed_pipes(self, data, direction):
+        for pipe in self.pipes:
+            pipe.recieve(data, direction)
+
+    def send(self, data, direction):
+        if direction == 'inbound':
+            self.proxy.send(data)
+        if direction == 'outbound':
+            self.server.send(data)
+
     def proxy_data(self, sender, receiver):
-        receiver.send(sender.recv(4096))
+        data = sender.recv(4096)
+        if sender is self.server:
+            direction = 'inbound'
+        if sender is self.proxy:
+            direction = 'outbound'
+        self.feed_pipes(data, direction)
+        receiver.send(data)
 
     def run(self):
         "Waits for a connection to the proxy, then connects to the server, then proxies data"
@@ -48,6 +68,50 @@ class SocketProxy(object):
                 else:
                     self.proxy_data(self.proxy, self.server)
 
+
+class SocketPlumbing(SocketProxy):
+    "Now with pipes!"
+
+    def add_pipe(self, pipe):
+        self.pipes.append(pipe)
+
+    def feed_pipes(self, data, direction):
+        for pipe in self.pipes:
+            pipe.recieve(data, direction)
+
+    def proxy_data(self, sender, receiver):
+        data = sender.recv(4096)
+        if sender is self.server:
+            direction = 'inbound'
+        if sender is self.proxy:
+            direction = 'outbound'
+        self.feed_pipes(data, direction)
+        receiver.send(data)
+
+
+class Pipe(object):
+    "Can be hooked up to a SocketPlumbing"
+
+    def attach_pipe(self, proxy):
+        self.proxy = proxy
+
+    def send_inbound(self, data):
+        self.proxy.send(data, 'inbound')
+
+    def send_outbound(self, data):
+        self.proxy.send(data, 'outbound')
+
+    def recieve_inbound(self, data):
+        pass
+
+    def recieve_outbound(self, data):
+        pass
+
+    def recieve(self, data, direction):
+        if direction = 'inbound':
+            self.recv_inbound(self, data)
+        if direction = 'outbound':
+            self.recv_outbound(self, data)
 
 def main(proxy_class):
 
