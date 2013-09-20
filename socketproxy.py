@@ -109,10 +109,11 @@ class Pipe(object):
         pass
 
     def recieve(self, data, direction):
-        if direction = 'inbound':
-            self.recv_inbound(self, data)
-        if direction = 'outbound':
-            self.recv_outbound(self, data)
+        if direction == 'inbound':
+            self.recieve_inbound(data)
+        if direction == 'outbound':
+            self.recieve_outbound(data)
+
 
 def main(proxy_class):
 
