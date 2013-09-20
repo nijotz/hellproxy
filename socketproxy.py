@@ -26,6 +26,9 @@ class SocketProxy(object):
         self.listener, addr = self.listener_conn.accept()
         logging.info('{} connected'.format(addr))
 
+    def proxy_data(self, sender, receiver):
+        receiver.send(sender.recv(4096))
+
     def run(self):
         "Waits for a connection to the proxy, then connects to the server, then proxies data"
 
@@ -35,14 +38,13 @@ class SocketProxy(object):
         while True:
             # Wait for one of the sockets to be readable
             sockets = (self.server, self.listener)
-            readables, writeables, errors = select.select(sockets, (), sockets, 60)
+            readables, _, errors = select.select(sockets, (), sockets, 60)
 
-            # Proxy data
             for readable in readables:
                 if readable is self.server:
-                    self.listener.send(self.server.recv(4096))
+                    self.proxy_data(self.server, self.listener)
                 else:
-                    self.server.send(self.listener.recv(4096))
+                    self.proxy_data(self.listener, self.server)
 
 
 def main():
