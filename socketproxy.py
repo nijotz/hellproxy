@@ -48,14 +48,21 @@ class SocketProxy(object):
 
 
 def main():
+
+    # Parse arguments
     import argparse
     parser = argparse.ArgumentParser(description='Proxy a socket connection')
     parser.add_argument('host')
     parser.add_argument('port')
     args = parser.parse_args()
 
-    logging.info('Start proxy to connect to {} on port {}'.format(args.host, args.port))
+    # Setup logging to stdout
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.addHandler(logging.StreamHandler())
 
+    # Start proxy
+    logging.info('Starting proxy to connect to {} on port {}'.format(args.host, args.port))
     proxy = SocketProxy(args.host, args.port)
     proxy.run()
 
