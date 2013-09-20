@@ -49,7 +49,7 @@ class SocketProxy(object):
                     self.proxy_data(self.proxy, self.server)
 
 
-def main():
+def main(proxy_class):
 
     # Parse arguments
     import argparse
@@ -65,8 +65,8 @@ def main():
 
     # Start proxy
     logging.info('Starting proxy to connect to {} on port {}'.format(args.host, args.port))
-    proxy = SocketProxy(args.host, args.port)
+    proxy = proxy_class(args.host, args.port)
     proxy.run()
 
 if __name__ == '__main__':
-    main()
+    main(SocketProxy)
