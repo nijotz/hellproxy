@@ -8,7 +8,7 @@ class TestProxy(SocketPlumbing):
         self.pipes.append(TestPipe())
 
 class TestPipe(Pipe):
-    
+
     def recieve_inbound(self, data):
         if data.find('x') != -1:
             print "I FOUND AN 'e'! THIS IS SPECIAL!!"
